@@ -44,38 +44,40 @@ public class CustomerServiceImpl implements CustomerService {
 		//Book the driver with lowest driverId who is free (cab available variable is Boolean.TRUE). If no driver is available, throw "No cab available!" exception
 		//Avoid using SQL query
 
-		Customer customer= customerRepository2.findById(customerId).get();
-		List<Driver> driverList= driverRepository2.findAll();
+		List<Driver> drivers= driverRepository2.findAll();
 
-		Collections.sort(driverList,(s1,s2) -> s1.getDriverId()- s2.getDriverId());
-		Driver driver=null;
+		Collections.sort(drivers, (s1,s2) -> s1.getDriverId() - s2.getDriverId());
+		Driver bookDriver=null;
 
-		for(Driver driver1: driverList){
-			if(driver1.getCab().getAvailable()){
-				driver=driver1;
+		for(Driver driver: drivers){
+			if(driver.getCab().getAvailable()){
+				bookDriver=driver;
 				break;
 			}
 		}
-		if(driver==null){
+		if(bookDriver==null){
 			throw new Exception("No cab available!");
 		}
 
-		TripBooking tripBooking=new TripBooking();
-		tripBooking.setDistanceInKm(distanceInKm);
-		tripBooking.setToLocation(toLocation);
-		tripBooking.setFromLocation(fromLocation);
+		Customer customer= customerRepository2.findById(customerId).get();
+
+		TripBooking tripBooking=new TripBooking(fromLocation,toLocation,distanceInKm);
+//		tripBooking.setDistanceInKm(distanceInKm);
+//		tripBooking.setToLocation(toLocation);
+//		tripBooking.setFromLocation(fromLocation);
+
 		tripBooking.setCustomer(customer);
 		tripBooking.setStatus(TripStatus.CONFIRMED);
-		tripBooking.setBill(driver.getCab().getPerKmRate()*distanceInKm);
-		tripBooking.setDriver(driver);
+		tripBooking.setBill(bookDriver.getCab().getPerKmRate() * distanceInKm);
+		tripBooking.setDriver(bookDriver);
 
-		List<TripBooking> tripBookingList= driver.getTripBookingList();
+		List<TripBooking> tripBookingList= bookDriver.getTripBookingList();
 
 		if(tripBookingList==null){
 			tripBookingList=new ArrayList<>();
 		}
 
-		driver.setTripBookingList(tripBookingList);
+		bookDriver.setTripBookingList(tripBookingList);
 
 		List<TripBooking> customerTripBooking= customer.getTripBookingList();
 		if(customerTripBooking==null){
@@ -86,7 +88,7 @@ public class CustomerServiceImpl implements CustomerService {
 
 		customerRepository2.save(customer);
 		tripBookingRepository2.save(tripBooking);
-		driverRepository2.save(driver);
+		driverRepository2.save(bookDriver);
 
 		return tripBooking;
 	}
