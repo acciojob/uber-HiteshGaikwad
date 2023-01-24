@@ -50,7 +50,7 @@ public class CustomerServiceImpl implements CustomerService {
 		try{
 			//TripBooking tripBooking=
 			for(Driver driver: driverList){
-				if(driver.getCab().isAvailable()==true){
+				if(driver.getCab().getAvailable()==true){
 					tripBooking.setFromLocation(fromLocation);
 					tripBooking.setToLocation(toLocation);
 					tripBooking.setDistanceInKm(distanceInKm);
